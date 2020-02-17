@@ -1,12 +1,12 @@
 {
-  "name": "hyper-template",
+  "name": "dalia-challenge",
   "version": "0.1.0",
-  "description": "Rust website template",
+  "description": "Aggregate and display a filterable list of Berlin cultural events",
   "main": "index.js",
   "scripts": {
     "dev": "run-s style serve:dev",
-    "docker:build": "docker build -t hyper-template .",
-    "docker:run": "docker run -dit -p 8080:8080 hyper-template",
+    "docker:build": "docker build -t dalia-challenge .",
+    "docker:run": "docker run -dit -p 8080:8080 dalia-challenge",
     "lint": "run-s lint:rs lint:css",
     "lint:css": "stylelint src/css/*",
     "lint:rs": "cargo clippy",
@@ -21,14 +21,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deciduously/hyper-template.git"
+    "url": "git+https://github.com/deciduously/dalia-challenge.git"
   },
   "author": "Ben Lovy <ben@deciduously.com>",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/deciduously/hyper-template/issues"
+    "url": "https://github.com/deciduously/dalia-challenge/issues"
   },
-  "homepage": "https://github.com/deciduously/hyper-template#readme",
+  "homepage": "https://github.com/deciduously/dalia-challenge#readme",
   "dependencies": {
     "tailwindcss": "^1.2.0"
   },

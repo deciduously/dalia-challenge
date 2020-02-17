@@ -1,5 +1,10 @@
 {% extends "skel.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Berlin Cultural Events{% endblock %}
 {% block content %}
-<h1>HOME PAGE</h1>
+<h1>Berlin Cultural Events</h1>
+<ul>
+    {% for event in events %}
+    <li><span>{{ event.title }}</span> - <span>{{ event.event_date }}</span><p>{{ event.synopsis }}</p></li>
+    {% endfor %}
+</ul>
 {% endblock %}

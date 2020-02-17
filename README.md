@@ -1,10 +1,6 @@
 # Hyper Template
 
-Template repo for a backend app.  Do a global find-and-replace on `hyper-template`, filling in your app's name.  Change the Author info to yourself in these three files:
-
-- LICENSE
-- Cargo.toml
-- Package.json
+Web application to collect, aggregate, and display various cultural events in Berlin.
 
 TODO - a separate template that's this plus a blog option, using the build script.
 TODO - tests, unit and E2E
@@ -35,10 +31,14 @@ Options set in `src/config.toml` override these defaults, but options passed at 
 ### Crates
 
 - [askama](https://github.com/djc/askama) - Templates
+- [diesel](https://diesel.rs) - ORM
+- [dotenv](https://github.com/emberian/rust-dotenv) - `.env` file QoL helper
 - [hyper](https://hyper.rs/) - HTTP
 - [lazy_static](https://github.com/rust-lang-nursery/lazy-static.rs) - Runtime-evaluated statics
 - [log](https://github.com/rust-lang/log) - Logging macros
 - [pretty_env_logger](https://github.com/seanmonstar/pretty-env-logger) - Pretty log output
+- [r2d2](https://github.com/sfackler/r2d2) - DB connection pool
+- [serde](https://serde.rs/) - Serialization/deserialization
 - [structopt](https://github.com/TeXitoi/structopt) - CLI
 
 ### Style

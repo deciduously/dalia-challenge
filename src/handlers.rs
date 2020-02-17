@@ -12,7 +12,7 @@ pub type HandlerResult = Result<Response<Body>, Infallible>;
 
 // General handlers
 
-/// Top-level handler that DEFLATE compresses and responds with from a &[u8] body
+/// Top-level handler that DEFLATE compresses and responds from a &[u8] body
 /// If None passed to status, 200 OK will be returned
 pub async fn bytes_handler(
     body: &[u8],
@@ -32,7 +32,7 @@ pub async fn bytes_handler(
         .unwrap())
 }
 
-/// Pass string through to bytes_handler
+/// Pass string to bytes_handler
 pub async fn string_handler(
     body: &str,
     content_type: &str,
@@ -41,12 +41,14 @@ pub async fn string_handler(
     bytes_handler(body.as_bytes(), content_type, status).await
 }
 
+/// Pass HTML string to string_handler
 pub async fn html_str_handler(body: &str) -> HandlerResult {
     string_handler(body, "text/html", None).await
 }
 
 // Route handlers
 
+/// Serve any image assets requested
 pub async fn image(path_str: &str) -> HandlerResult {
     let path_buf = PathBuf::from(path_str);
     let file_name = path_buf.file_name().unwrap().to_str().unwrap();
@@ -54,7 +56,7 @@ pub async fn image(path_str: &str) -> HandlerResult {
         match ext.to_str().unwrap() {
             "ico" => {
                 let mut file =
-                    File::open("assets/images/favicon.ico").expect("Should open icon file");
+                    File::open("src/assets/images/favicon.ico").expect("Should open icon file");
                 let mut buf = Vec::new();
                 file.read_to_end(&mut buf).expect("Should read icon file");
                 bytes_handler(&buf, "image/x-icon", None).await
@@ -74,14 +76,16 @@ pub async fn image(path_str: &str) -> HandlerResult {
     }
 }
 
+/// Serve main page
 pub async fn index() -> HandlerResult {
     let template = IndexTemplate::default();
     let html = template.render().expect("Should render markup");
     html_str_handler(&html).await
 }
 
+/// Serve 404 page
 pub async fn four_oh_four() -> HandlerResult {
     let template = FourOhFourTemplate::default();
     let html = template.render().expect("Should render markup");
-    string_handler(&html, "text/html", Some(StatusCode::NOT_FOUND)).await
+    html_str_handler(&html).await
 }

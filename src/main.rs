@@ -1,6 +1,11 @@
 // main.rs
 // Entry point - tokio
 
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate diesel_migrations;
+
 use hyper::{
     service::{make_service_fn, service_fn},
     Server,
@@ -9,13 +14,18 @@ use log::info;
 use std::convert::Infallible;
 
 mod config;
+mod db;
 mod handlers;
+mod models;
 mod router;
+mod schema;
 mod templates;
 mod types;
 
 use config::{init_logging, OPT};
 use router::router;
+
+// TODO thiserror crate - try to eliminate unwrap()/expect()
 
 #[tokio::main]
 async fn main() {

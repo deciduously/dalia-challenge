@@ -2,6 +2,7 @@ use crate::handlers::*;
 use hyper::{Body, Method, Request};
 use log::{info, warn};
 
+/// Top-level route handler
 pub async fn router(req: Request<Body>) -> HandlerResult {
     let (method, path) = (req.method(), req.uri().path());
     info!("{} {}", method, path);
@@ -30,6 +31,7 @@ pub async fn router(req: Request<Body>) -> HandlerResult {
             }
         }
         _ => {
+            // Not a configured route!
             warn!("{}: 404!", path);
             four_oh_four().await
         }
