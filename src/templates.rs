@@ -20,6 +20,7 @@ pub struct IndexTemplate<'a> {
     events: Vec<Event>,
     title_like: &'a str,
     sources: &'a [EventSource],
+    last_refresh: &'a str,
 }
 
 impl<'a> IndexTemplate<'a> {
@@ -29,6 +30,7 @@ impl<'a> IndexTemplate<'a> {
         events: Vec<Event>,
         title_like: &'a str,
         sources: &'a [EventSource],
+        last_refresh: &'a str,
     ) -> Self {
         Self {
             begin_date,
@@ -36,6 +38,7 @@ impl<'a> IndexTemplate<'a> {
             events,
             title_like: if title_like == "%" { "" } else { title_like },
             sources,
+            last_refresh
         }
     }
 }

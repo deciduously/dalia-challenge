@@ -1,6 +1,5 @@
 FROM clux/muslrust AS builder
 WORKDIR /usr/src/
-RUN USER=root apt-get install libssl-dev
 
 # Create a dummy project and build the app's dependencies.
 # If the Cargo.toml or Cargo.lock files have not changed,
@@ -8,9 +7,9 @@ RUN USER=root apt-get install libssl-dev
 RUN USER=root cargo new dalia-challenge
 WORKDIR /usr/src/dalia-challenge
 COPY Cargo.toml Cargo.lock ./
-RUN cargo build --release
 
 # Copy the source and build the application.
+COPY migrations ./migrations
 COPY src ./src
 COPY templates ./templates
 RUN cargo install --target x86_64-unknown-linux-musl --path .

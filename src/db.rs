@@ -1,28 +1,23 @@
 // Database handling
 
 use super::*;
+use chrono::prelude::*;
 use diesel::{prelude::*, r2d2::ConnectionManager, sql_types::Bool, sqlite::SqliteConnection};
 use diesel_migrations::*;
-use dotenv::dotenv;
 use lazy_static::lazy_static;
-use std::{env, ops::Deref};
+use std::ops::Deref;
+
+const DEFAULT_DB_URL: &str = "db.sqlite";
 
 lazy_static! {
-    pub static ref DB_POOL: Pool = {
-        dotenv().ok();
-        establish_and_run_migrations(
-            &env::var("DATABASE_URL")
-                .expect("Should find configured DATABASE_URL environment variable"),
-        )
-        .expect("Should create connection pool.")
-    };
+    pub static ref DB_POOL: Pool =
+        establish_and_run_migrations(DEFAULT_DB_URL).expect("Should create connection pool.");
 }
 
 /// R2D2 connection pool type
 pub type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
 /// Pooled connection
-// TODO this doesn't work?
 pub struct Conn(r2d2::PooledConnection<ConnectionManager<SqliteConnection>>);
 
 impl Deref for Conn {
@@ -87,11 +82,32 @@ pub fn filtered_events(
         .load::<Event>(conn)?)
 }
 
-/// Add a new event to the database.  True on success, false on failure
+/// Add a new event to the database
 pub fn create_event(conn: &SqliteConnection, new_event: NewEvent) -> AppResult<usize> {
     Ok(diesel::insert_into(events::table)
         .values(&new_event)
         .execute(conn)?)
+}
+
+/// Add a new refresh record
+pub fn create_refresh(conn: &SqliteConnection, total_added: i32) -> AppResult<usize> {
+    Ok(diesel::insert_into(refreshes::table)
+        .values(NewRefresh {
+            refresh_dt: &Utc::now().to_rfc3339(),
+            total_added,
+        })
+        .execute(conn)?)
+}
+
+/// Get the most recent refresh, if any
+pub fn latest_refresh(conn: &SqliteConnection) -> AppResult<Option<Refresh>> {
+    use schema::refreshes::dsl::*;
+    let res = refreshes.order(refresh_dt.desc()).limit(1).load::<Refresh>(conn)?;
+    if res.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(res[0].clone()))
+    }
 }
 
 #[cfg(test)]

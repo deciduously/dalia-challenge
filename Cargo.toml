@@ -11,8 +11,8 @@ license = "BSD-3-Clause"
 
 [dependencies]
 askama = "0.9"
+chrono = "0.4"
 diesel_migrations = "1.4"
-dotenv = "0.15"
 flate2 = "1.0"
 hyper = "0.13"
 lazy_static = "1.4"
@@ -27,10 +27,6 @@ structopt = "0.3"
 thiserror = "1.0"
 toml = "0.5"
 url = "2.1"
-
-[dependencies.chrono]
-version = "0.4"
-features = ["serde"]
 
 [dependencies.diesel]
 version = "1.4"

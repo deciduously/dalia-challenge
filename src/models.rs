@@ -58,4 +58,17 @@ impl<'a> NewEvent<'a> {
     }
 }
 
-// TODO updates table - date, records_added
+/// Struct for keeping track of data scrapes
+#[derive(Debug, Clone, PartialEq, Queryable)]
+pub struct Refresh {
+    pub id: i32,
+    pub refresh_dt: String,
+    pub total_added: i32,
+}
+
+#[derive(Debug, PartialEq, Insertable)]
+#[table_name = "refreshes"]
+pub struct NewRefresh<'a> {
+    pub refresh_dt: &'a str,
+    pub total_added: i32,
+}

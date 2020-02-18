@@ -2,26 +2,25 @@
 {% block title %}Berlin Cultural Events{% endblock %}
 {% block content %}
 <header><h1>Berlin Cultural Events</h1></header>
-<button onclick="refreshSources()">Refresh Sources - TODO Make This Better</button>
+Last refresh: <span id="last-refresh">{{ last_refresh }}</span>
 <form action="/" method="post">
     <fieldset>
         <legend>Input Sources</legend>
         {% for source in sources %}
         <label for={{ source.markup_name() }}>{{ source.to_string() }}</label>
-        <input type="checkbox" id={{ source.markup_name() }} name={{ source.markup_name() }} {% if source.enabled() %} checked {% endif %}>
+        <input type="checkbox" id="{{ source.markup_name() }}" name="{{ source.markup_name() }}" onchange="this.form.submit()" {% if source.enabled() %} checked {% endif %}>
         {% endfor %}
     </fieldset>
     <label for="title">Title Search</label>
-    <input type="text" id="title" name="title" value={{ title_like }}>
+    <input type="text" id="title" name="title" value="{{ title_like }}" onchange="this.form.submit()">
     <fieldset>
         <legend>Date Range</legend>
         <label for="startdate">Start Date</label>
-        <input type="date" id="startdate" name="startdate" value={{ begin_date }}>
+        <input type="date" id="startdate" name="startdate" value="{{ begin_date }}" onchange="this.form.submit()">
         <label for="enddate">End Date</label>
-        <input type="date" id="enddate" name="enddate" value={{ end_date }}>
+        <input type="date" id="enddate" name="enddate" value="{{ end_date }}" onchange="this.form.submit()">
     </fieldset>
-    <input type="submit" value="Submit">
-</form>
+    </form>
 <span>Total found: {{ events.len() }}</span>
 <ul class="flex flex-col bg-gray-200 max-w-2xl mx-auto">
     {% for event in events %}

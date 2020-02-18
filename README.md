@@ -32,7 +32,6 @@ Options set in `src/config.toml` override these defaults, but options passed at 
 - [askama](https://github.com/djc/askama) - Templates
 - [chrono](https://github.com/chronotope/chrono) - Date and time
 - [diesel](https://diesel.rs) - ORM
-- [dotenv](https://github.com/emberian/rust-dotenv) - `.env` file QoL helper
 - [hyper](https://hyper.rs/) - HTTP server
 - [lazy_static](https://github.com/rust-lang-nursery/lazy-static.rs) - Runtime-evaluated statics
 - [log](https://github.com/rust-lang/log) - Logging macros

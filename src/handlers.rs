@@ -6,7 +6,7 @@ use askama::Template;
 use chrono::prelude::*;
 use flate2::{write::ZlibEncoder, Compression};
 use hyper::{header, Body, Request, Response, StatusCode};
-use std::{collections::HashMap, fs::File, io::prelude::*, path::PathBuf};
+use std::{collections::HashMap, convert::TryInto, fs::File, io::prelude::*, path::PathBuf};
 use url::form_urlencoded;
 
 // Universal handler return type
@@ -136,17 +136,26 @@ pub async fn index(req: Request<Body>) -> HandlerResult {
         }
     }
 
+    // Grab connection
+    let conn = DB_POOL.get().expect("Should get DB connection");
+
     // Request event set
-    let events = filtered_events(
-        &begin_date,
-        &end_date,
-        &sources,
-        title_like,
-        &DB_POOL.get().expect("Should get DB connection"),
-    )?;
+    let events = filtered_events(&begin_date, &end_date, &sources, title_like, &conn)?;
 
     // Render template
-    let template = IndexTemplate::new(&begin_date, &end_date, events, title_like, &sources);
+    let last_refresh = if let Some(r) = latest_refresh(&conn)? {
+        r.refresh_dt
+    } else {
+        "never".to_string()
+    };
+    let template = IndexTemplate::new(
+        &begin_date,
+        &end_date,
+        events,
+        title_like,
+        &sources,
+        &last_refresh,
+    );
     let html = template.render().expect("Should render markup");
     html_str_handler(&html).await
 }
@@ -169,7 +178,25 @@ async fn redirect_home() -> HandlerResult {
 
 /// Request a re-scrape
 pub async fn refresh_events() -> HandlerResult {
+    let conn = DB_POOL.get().expect("Should get DB connection");
+
+    // Only refresh if it's been more than 24h
+    // If there's no refresh, we'll just continue on
+    if let Some(last_refresh) = latest_refresh(&conn)? {
+        let now = Utc::now();
+        let last = DateTime::parse_from_rfc3339(&last_refresh.refresh_dt)?;
+        let duration = now.timestamp() - last.timestamp();
+        if duration < (60 * 60 * 24) {
+            // If it hasn't been 24 hours since the last scrape, do nothing
+            return Ok(Response::default())
+        }
+    }
+
     let total_added = EventSource::scrape_all_events().await?;
     info!("Added {} new events", total_added);
+    create_refresh(
+        &conn,
+        total_added.try_into().unwrap(), // I would be VERY surprised if we ever overflow an integer with this count
+    )?;
     redirect_home().await
 }
