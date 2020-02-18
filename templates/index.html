@@ -8,16 +8,17 @@
         <legend>Input Sources</legend>
         {% for source in sources %}
         <label for={{ source.markup_name() }}>{{ source.to_string() }}</label>
-        <input type="checkbox" id={{ source.markup_name() }} name={{ source.markup_name() }} selected>
+        <input type="checkbox" id={{ source.markup_name() }} name={{ source.markup_name() }} {% if source.enabled() %} checked {% endif %}>
         {% endfor %}
     </fieldset>
     <fieldset>
         <legend>Title Search</legend>
-        <input type="text" id="title" name="title">
+        <input type="text" id="title" name="title" value={{ title_like }}>
     </fieldset>
     <input type="submit" value="Submit">
     <input type="reset">
 </form>
+<span>Total found: {{ events.len() }}</span>
 <ul class="flex flex-col bg-gray-200 max-w-2xl mx-auto">
     {% for event in events %}
     <li id="node-{{ event.id }}" class="bg-gray-400 py-5">

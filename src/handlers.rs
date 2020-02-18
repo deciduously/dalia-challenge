@@ -83,20 +83,52 @@ pub async fn index(req: Request<Body>) -> HandlerResult {
     let params = form_urlencoded::parse(hyper::body::to_bytes(req).await?.as_ref())
         .into_owned()
         .collect::<HashMap<String, String>>();
-        info!("params: {:?}", params);
-    //let sources = params.get("sources");
-    // TODO FromStr for EventSource
+
+    // Parse sources
+    let mut sources = {
+        let mut ret = Vec::new();
+        let all_possible = EventSource::all();
+        for source in all_possible {
+            if params.get(&source.markup_name()).is_some() {
+                ret.push(*source);
+            } else {
+                ret.push(source.toggle());
+            }
+        }
+        ret
+    };
+
+    // If none were checked, include everything
+    let mut enabled_cnt = 0;
+    for s in &sources {
+        if s.enabled() {
+            enabled_cnt += 1;
+        }
+    }
+    if enabled_cnt == 0 {
+        sources = EventSource::all().to_vec()
+    }
+
+    // Parse title search query
     let title_like = if let Some(s) = params.get("title") {
-        s
+        if s.is_empty() {
+            "%"
+        } else {
+            s
+        }
     } else {
         "%"
     };
+
+    // Request event set
     let events = filtered_events(
-        EventSource::CoBerlin,
+        &sources,
         title_like,
         &DB_POOL.get().expect("Should get DB connection"),
     )?;
-    let template = IndexTemplate::new(events);
+
+    // Render template
+    let template = IndexTemplate::new(events, title_like, &sources);
     let html = template.render().expect("Should render markup");
     html_str_handler(&html).await
 }

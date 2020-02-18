@@ -1,11 +1,12 @@
 // Includes the scraping logic
 
 use super::*;
+use chrono::prelude::*;
 use select::{
     document::Document,
     predicate::{Class, Name, Predicate},
 };
-use std::{fmt, str::FromStr};
+use std::fmt;
 
 /// Types that implement Calendar can be used to populate the event DB table
 pub trait Calendar: Copy {
@@ -17,10 +18,10 @@ pub trait Calendar: Copy {
 /// All the implemented event source calendars
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum EventSource {
-    CoBerlin,
-    DeutscheOperBerlin,
-    Gorki,
-    Berghain,
+    CoBerlin(bool),
+    DeutscheOperBerlin(bool),
+    Gorki(bool),
+    Berghain(bool),
 }
 
 impl EventSource {
@@ -29,7 +30,12 @@ impl EventSource {
     /// Get all the event sources to iterate over
     pub fn all() -> &'static [EventSource] {
         use EventSource::*;
-        &[CoBerlin, DeutscheOperBerlin, Gorki, Berghain]
+        &[
+            CoBerlin(true),
+            //DeutscheOperBerlin(true),
+            //Gorki(true),
+            Berghain(true),
+        ]
     }
     /// Scrape all the event sources, adding each new event found to the DB.  Returns number of events added
     pub async fn scrape_all_events() -> AppResult<usize> {
@@ -47,10 +53,17 @@ impl EventSource {
     pub fn as_str(self) -> &'static str {
         use EventSource::*;
         match self {
-            CoBerlin => "CoBerlin",
-            DeutscheOperBerlin => "DeutscheOperBerlin",
-            Gorki => "Gorki",
-            Berghain => "Berghain",
+            CoBerlin(_) => "CoBerlin",
+            DeutscheOperBerlin(_) => "DeutscheOperBerlin",
+            Gorki(_) => "Gorki",
+            Berghain(_) => "Berghain",
+        }
+    }
+    /// Check whether this source is enabled
+    pub fn enabled(self) -> bool {
+        use EventSource::*;
+        match self {
+            CoBerlin(b) | DeutscheOperBerlin(b) | Gorki(b) | Berghain(b) => b,
         }
     }
     /// Retrieve the current HTML from the source
@@ -66,19 +79,19 @@ impl EventSource {
     pub fn pretty_name(self) -> &'static str {
         use EventSource::*;
         match self {
-            CoBerlin => "C/O Berlin",
-            DeutscheOperBerlin => "Deutsche Oper Berlin",
-            Gorki | Berghain => self.as_str(),
+            CoBerlin(_) => "C/O Berlin",
+            DeutscheOperBerlin(_) => "Deutsche Oper Berlin",
+            Gorki(_) | Berghain(_) => self.as_str(),
         }
     }
     /// Static string for the webpage URL
     fn url_base(self) -> &'static str {
         use EventSource::*;
         match self {
-            CoBerlin => "http://www.co-berlin.org",
-            DeutscheOperBerlin => "http://www.deutscheoperberlin.de",
-            Gorki => "http://gorki.de/en/programme",
-            Berghain => "http://berghain.de",
+            CoBerlin(_) => "http://www.co-berlin.org",
+            DeutscheOperBerlin(_) => "http://www.deutscheoperberlin.de",
+            Gorki(_) => "http://gorki.de/en/programme",
+            Berghain(_) => "http://berghain.de",
         }
     }
     // Build a URL
@@ -89,12 +102,22 @@ impl EventSource {
     fn url_calendar(self) -> String {
         use EventSource::*;
         let uri = match self {
-            CoBerlin => "en/calender",
-            DeutscheOperBerlin => "en_EN/calendar",
-            Gorki => "en/programme/2018/08/all",
-            Berghain => "en/program",
+            CoBerlin(_) => "en/calender",
+            DeutscheOperBerlin(_) => "en_EN/calendar",
+            Gorki(_) => "en/programme/2018/08/all",
+            Berghain(_) => "en/program",
         };
         self.url(uri)
+    }
+    /// Toggle from true to false or vice versa
+    pub fn toggle(self) -> Self {
+        use EventSource::*;
+        match self {
+            CoBerlin(b) => CoBerlin(!b),
+            DeutscheOperBerlin(b) => DeutscheOperBerlin(!b),
+            Gorki(b) => Gorki(!b),
+            Berghain(b) => Berghain(!b),
+        }
     }
 }
 
@@ -108,7 +131,7 @@ impl Calendar for EventSource {
         use EventSource::*;
         let mut ret = 0;
         match self {
-            CoBerlin => {
+            CoBerlin(_) => {
                 for node in
                     document.find(Class("seite-c-single").descendant(Class("calender-text")))
                 {
@@ -123,10 +146,26 @@ impl Calendar for EventSource {
                             .unwrap();
                         // range or single date?
                         match date.find(Class("date-display-range")).next() {
-                            Some(div) => (
-                                div.find(Class("date-display-start")).next().unwrap().text(),
-                                Some(div.find(Class("date-display-end")).next().unwrap().text()),
-                            ),
+                            Some(div) => {
+                                /*
+                                let begin_dt = DateTime::parse_from_str(
+                                    &div.find(Class("date-display-start")).next().unwrap().text(),
+                                    "%d/%m/%y"
+                                )?;
+                                let end_dt = DateTime::parse_from_str(
+                                    &div.find(Class("date-display-end")).next().unwrap().text(),
+                                    "%d/%m/%y"
+                                )?;
+                                info!("begin: {:?}, end: {:?}", begin_dt, end_dt);
+                                (begin_dt.to_rfc3339(), Some(end_dt.to_rfc3339()))
+                                */
+                                (
+                                    div.find(Class("date-display-start")).next().unwrap().text(),
+                                    Some(
+                                        div.find(Class("date-display-end")).next().unwrap().text(),
+                                    ),
+                                )
+                            }
                             None => {
                                 let single_date =
                                     date.find(Class("date-display-single")).next().unwrap();
@@ -148,7 +187,7 @@ impl Calendar for EventSource {
                         &synopsis,
                         &event_date,
                         event_end_date,
-                        CoBerlin,
+                        CoBerlin(true),
                     );
 
                     // Only add if it's a new event
@@ -163,9 +202,9 @@ impl Calendar for EventSource {
                     }
                 }
             }
-            DeutscheOperBerlin => {} // Month, then Date, then Node
-            Gorki => {}              // Month, then Date, then Node
-            Berghain => {
+            DeutscheOperBerlin(_) => {} // Month, then Date, then Node
+            Gorki(_) => {}              // Month, then Date, then Node
+            Berghain(_) => {
                 for node in document.find(Class("upcoming-event")) {
                     let href = self.url(node.attr("href").unwrap());
 
@@ -194,7 +233,7 @@ impl Calendar for EventSource {
                         &synopsis,
                         &event_date,
                         None,
-                        Berghain,
+                        Berghain(true),
                     );
 
                     // Only add if it's a new event
@@ -220,6 +259,8 @@ impl fmt::Display for EventSource {
     }
 }
 
+/* UNUSED
+
 impl FromStr for EventSource {
     type Err = std::io::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -236,3 +277,5 @@ impl FromStr for EventSource {
         }
     }
 }
+
+*/

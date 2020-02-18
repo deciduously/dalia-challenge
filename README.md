@@ -1,9 +1,8 @@
-# Hyper Template
+# Dalia Research Challenge
+
+## Berlin Cultural Events
 
 Web application to collect, aggregate, and display various cultural events in Berlin.
-
-TODO - a separate template that's this plus a blog option, using the build script.
-TODO - tests, unit and E2E
 
 ## Requirements
 
@@ -31,6 +30,7 @@ Options set in `src/config.toml` override these defaults, but options passed at 
 ### Crates
 
 - [askama](https://github.com/djc/askama) - Templates
+- [chrono](https://github.com/chronotope/chrono) - Date and time
 - [diesel](https://diesel.rs) - ORM
 - [dotenv](https://github.com/emberian/rust-dotenv) - `.env` file QoL helper
 - [hyper](https://hyper.rs/) - HTTP server
@@ -42,6 +42,7 @@ Options set in `src/config.toml` override these defaults, but options passed at 
 - [select](https://github.com/utkarshkukreti/select.rs) - Scrape data from HTML
 - [serde](https://serde.rs/) - Serialization/deserialization
 - [structopt](https://github.com/TeXitoi/structopt) - CLI
+- [url](https://github.com/servo/rust-url) - URL parsing
 
 ### Style
 

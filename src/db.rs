@@ -1,7 +1,7 @@
 // Database handling
 
 use super::*;
-use diesel::{prelude::*, r2d2::ConnectionManager, sqlite::SqliteConnection};
+use diesel::{prelude::*, r2d2::ConnectionManager, sql_types::Bool, sqlite::SqliteConnection};
 use diesel_migrations::*;
 use dotenv::dotenv;
 use lazy_static::lazy_static;
@@ -55,20 +55,29 @@ pub fn all_events(conn: &SqliteConnection) -> AppResult<Vec<Event>> {
 
 /// Get a subset of events based on passed parameters
 pub fn filtered_events(
-    src: EventSource,
+    src: &[EventSource],
     title_like: &str,
     conn: &SqliteConnection,
 ) -> AppResult<Vec<Event>> {
-    info!("title search: {}", title_like);
     // TODO search for source in all sources
     use schema::events::dsl::*;
-    Ok(events
-        .filter(
-            source
-                .like(&format!("%{}%", src.as_str()))
-                .and(title.like(&format!("%{}%", title_like))),
-        )
-        .load::<Event>(conn)?)
+
+    // Start query builder
+    let events = events;
+
+    // Filter title
+    let title_like_str = format!("%{}%", title_like);
+    let filtered = events.filter(title.like(&title_like_str));
+
+    // Filter sources
+    let always_false = Box::new(source.eq(""));
+    let query: Box<dyn BoxableExpression<schema::events::table, _, SqlType = Bool>> = src
+        .iter()
+        .filter(|s| s.enabled())
+        .map(|s| source.eq(s.as_str()))
+        .fold(always_false, |query, item| Box::new(query.or(item)));
+
+    Ok(filtered.filter(query).load::<Event>(conn)?)
 }
 
 /// Add a new event to the database.  True on success, false on failure
@@ -96,7 +105,7 @@ mod test {
             "Some really cool thing you don't want to miss",
             "2020-02-17",
             Some("2020-02-18".into()),
-            EventSource::CoBerlin,
+            EventSource::CoBerlin(true),
         );
 
         let conn = TEST_POOL.get().expect("Should get DB connection");

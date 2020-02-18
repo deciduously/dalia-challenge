@@ -6,6 +6,8 @@ use thiserror::Error;
 pub enum AppError {
     #[error("Connection pool error")]
     ConnError(#[from] r2d2::Error),
+    #[error("Datetime error")]
+    DateTimeError(#[from] chrono::ParseError),
     #[error("Database error")]
     DbError(#[from] diesel::result::Error),
     #[error("Environment variable error")]

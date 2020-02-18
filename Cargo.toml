@@ -28,6 +28,10 @@ thiserror = "1.0"
 toml = "0.5"
 url = "2.1"
 
+[dependencies.chrono]
+version = "0.4"
+features = ["serde"]
+
 [dependencies.diesel]
 version = "1.4"
 features = ["r2d2", "sqlite"]
