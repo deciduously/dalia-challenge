@@ -1,6 +1,6 @@
-FROM rust:1.41.0 AS builder
+FROM clux/muslrust AS builder
 WORKDIR /usr/src/
-RUN rustup target add x86_64-unknown-linux-musl
+RUN USER=root apt-get install libssl-dev
 
 # Create a dummy project and build the app's dependencies.
 # If the Cargo.toml or Cargo.lock files have not changed,
@@ -17,6 +17,6 @@ RUN cargo install --target x86_64-unknown-linux-musl --path .
 
 # Copy the statically-linked binary into a scratch container.
 FROM scratch
-COPY --from=builder /usr/local/cargo/bin/dalia-challenge .
+COPY --from=builder /root/.cargo/bin/dalia-challenge .
 USER 1000
 CMD ["./dalia-challenge", "-a", "0.0.0.0", "-p", "8080"]

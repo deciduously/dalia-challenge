@@ -47,11 +47,13 @@ fn establish_and_run_migrations(url: &str) -> AppResult<Pool> {
     Ok(pool)
 }
 
+/// Get all currently stored events
 pub fn all_events(conn: &SqliteConnection) -> AppResult<Vec<Event>> {
     use schema::events::dsl::*;
     Ok(events.load::<Event>(conn)?)
 }
 
+/// Get a subset of events based on passed parameters
 pub fn filtered_events(
     src: EventSource,
     title_like: &str,
