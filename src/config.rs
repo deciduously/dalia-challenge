@@ -1,5 +1,6 @@
 // config.rs
 // CLI options and logging setup
+use super::*;
 use lazy_static::lazy_static;
 use log::{info, trace, warn};
 use serde_derive::Deserialize;
@@ -31,7 +32,7 @@ lazy_static! {
 }
 
 /// Start env_logger
-pub fn init_logging(level: u8) {
+pub fn init_logging(level: u8) -> AppResult<()> {
     // if RUST_BACKTRACE is set, ignore the arg given and set `trace` no matter what
     let mut overridden = false;
     let verbosity = if std::env::var("RUST_BACKTRACE").unwrap_or_else(|_| "0".into()) == "1" {
@@ -46,7 +47,7 @@ pub fn init_logging(level: u8) {
             _ => "trace",
         }
     };
-    set_var("RUST_LOG", verbosity);
+    set_var("RUST_LOG", format!("dalia_challenge={}", verbosity));
 
     pretty_env_logger::init();
 
@@ -56,8 +57,6 @@ pub fn init_logging(level: u8) {
         set_var("RUST_BACKTRACE", "1");
         trace!("RUST_BACKTRACE has been set");
     };
-    info!(
-        "Set verbosity to {}",
-        var("RUST_LOG").expect("Should set RUST_LOG environment variable")
-    );
+    info!("Set verbosity to {}", var("RUST_LOG")?);
+    Ok(())
 }

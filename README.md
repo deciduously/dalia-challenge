@@ -33,11 +33,13 @@ Options set in `src/config.toml` override these defaults, but options passed at 
 - [askama](https://github.com/djc/askama) - Templates
 - [diesel](https://diesel.rs) - ORM
 - [dotenv](https://github.com/emberian/rust-dotenv) - `.env` file QoL helper
-- [hyper](https://hyper.rs/) - HTTP
+- [hyper](https://hyper.rs/) - HTTP server
 - [lazy_static](https://github.com/rust-lang-nursery/lazy-static.rs) - Runtime-evaluated statics
 - [log](https://github.com/rust-lang/log) - Logging macros
 - [pretty_env_logger](https://github.com/seanmonstar/pretty-env-logger) - Pretty log output
+- [Reqwest](https://github.com/seanmonstar/reqwest) - Simpler HTTP client for scraping
 - [r2d2](https://github.com/sfackler/r2d2) - DB connection pool
+- [select](https://github.com/utkarshkukreti/select.rs) - Scrape data from HTML
 - [serde](https://serde.rs/) - Serialization/deserialization
 - [structopt](https://github.com/TeXitoi/structopt) - CLI
 

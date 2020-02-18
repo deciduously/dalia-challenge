@@ -15,21 +15,33 @@ use std::convert::Infallible;
 
 mod config;
 mod db;
+mod error;
 mod handlers;
 mod models;
 mod router;
 mod schema;
+mod scrape;
 mod templates;
-mod types;
+
+// Re-exports for more convenient in-crate `use`
+
+pub use config::*;
+pub use db::*;
+pub use error::*;
+pub use handlers::*;
+pub use models::*;
+pub use router::*;
+pub use schema::*;
+pub use scrape::*;
+pub use templates::*;
 
 use config::{init_logging, OPT};
 use router::router;
 
-// TODO thiserror crate - try to eliminate unwrap()/expect()
-
 #[tokio::main]
 async fn main() {
-    init_logging(2); // For now just INFO
+    init_logging(2).expect("Could not init logging"); // For now just INFO
+
     let addr = format!("{}:{}", OPT.address, OPT.port)
         .parse()
         .expect("Should parse net::SocketAddr");

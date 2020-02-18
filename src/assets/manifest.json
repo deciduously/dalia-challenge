@@ -1,5 +1,5 @@
 {
-    "name": "dalia-challenge-rs",
+    "name": "dalia-challenge",
     "short_name": "Things To Do In Berlin",
     "start_url": "/",
     "display": "standalone",

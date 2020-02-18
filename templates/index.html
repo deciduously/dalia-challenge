@@ -1,10 +1,38 @@
 {% extends "skel.html" %}
 {% block title %}Berlin Cultural Events{% endblock %}
 {% block content %}
-<h1>Berlin Cultural Events</h1>
-<ul>
+<header><h1>Berlin Cultural Events</h1></header>
+<button onclick="refreshSources()">Refresh Sources - TODO Make This Better</button>
+<form action="/" method="post">
+    <fieldset>
+        <legend>Input Sources</legend>
+        {% for source in sources %}
+        <label for={{ source.markup_name() }}>{{ source.to_string() }}</label>
+        <input type="checkbox" id={{ source.markup_name() }} name={{ source.markup_name() }} selected>
+        {% endfor %}
+    </fieldset>
+    <fieldset>
+        <legend>Title Search</legend>
+        <input type="text" id="title" name="title">
+    </fieldset>
+    <input type="submit" value="Submit">
+    <input type="reset">
+</form>
+<ul class="flex flex-col bg-gray-200 max-w-2xl mx-auto">
     {% for event in events %}
-    <li><span>{{ event.title }}</span> - <span>{{ event.event_date }}</span><p>{{ event.synopsis }}</p></li>
+    <li id="node-{{ event.id }}" class="bg-gray-400 py-5">
+        <h2 class="text-lg">{{ event.title }}</h2>
+        {% if event.subtitle.is_some() %}
+        <h3 class="italic">{{ event.subtitle.clone().unwrap().as_str() }}</h3>
+        {% endif %}
+            <span class="text-sm">
+            <span>{{ event.event_date }}</span>
+            {% if event.event_end_date.is_some() %}
+            <span> thru {{ event.event_end_date.clone().unwrap().as_str() }}</span>
+            {% endif %}
+        </span>
+        <p>{{ event.synopsis }}</p>
+    </li>
     {% endfor %}
 </ul>
 {% endblock %}

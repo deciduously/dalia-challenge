@@ -1,14 +1,15 @@
 // handlers.rs
 // Web route handlers and router
 
-use crate::templates::*;
+use super::*;
 use askama::Template;
 use flate2::{write::ZlibEncoder, Compression};
-use hyper::{header, Body, Response, StatusCode};
-use std::{convert::Infallible, fs::File, io::prelude::*, path::PathBuf};
+use hyper::{header, Body, Request, Response, StatusCode};
+use std::{collections::HashMap, fs::File, io::prelude::*, path::PathBuf};
+use url::form_urlencoded;
 
 // Universal handler return type
-pub type HandlerResult = Result<Response<Body>, Infallible>;
+pub type HandlerResult = AppResult<Response<Body>>;
 
 // General handlers
 
@@ -21,8 +22,8 @@ pub async fn bytes_handler(
 ) -> HandlerResult {
     // Compress
     let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
-    e.write_all(body).unwrap();
-    let compressed = e.finish().unwrap();
+    e.write_all(body)?;
+    let compressed = e.finish()?;
     // Return response
     Ok(Response::builder()
         .status(status.unwrap_or_default())
@@ -77,8 +78,25 @@ pub async fn image(path_str: &str) -> HandlerResult {
 }
 
 /// Serve main page
-pub async fn index() -> HandlerResult {
-    let template = IndexTemplate::default();
+pub async fn index(req: Request<Body>) -> HandlerResult {
+    // Parse params, if any
+    let params = form_urlencoded::parse(hyper::body::to_bytes(req).await?.as_ref())
+        .into_owned()
+        .collect::<HashMap<String, String>>();
+        info!("params: {:?}", params);
+    //let sources = params.get("sources");
+    // TODO FromStr for EventSource
+    let title_like = if let Some(s) = params.get("title") {
+        s
+    } else {
+        "%"
+    };
+    let events = filtered_events(
+        EventSource::CoBerlin,
+        title_like,
+        &DB_POOL.get().expect("Should get DB connection"),
+    )?;
+    let template = IndexTemplate::new(events);
     let html = template.render().expect("Should render markup");
     html_str_handler(&html).await
 }
@@ -88,4 +106,20 @@ pub async fn four_oh_four() -> HandlerResult {
     let template = FourOhFourTemplate::default();
     let html = template.render().expect("Should render markup");
     html_str_handler(&html).await
+}
+
+/// Redirect home to load any new events
+async fn redirect_home() -> HandlerResult {
+    Ok(Response::builder()
+        .status(StatusCode::SEE_OTHER)
+        .header(header::LOCATION, "/")
+        .body(Body::default())
+        .unwrap())
+}
+
+/// Request a re-scrape
+pub async fn refresh_events() -> HandlerResult {
+    let total_added = EventSource::scrape_all_events().await?;
+    info!("Added {} new events", total_added);
+    redirect_home().await
 }
