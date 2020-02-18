@@ -11,12 +11,16 @@
         <input type="checkbox" id={{ source.markup_name() }} name={{ source.markup_name() }} {% if source.enabled() %} checked {% endif %}>
         {% endfor %}
     </fieldset>
+    <label for="title">Title Search</label>
+    <input type="text" id="title" name="title" value={{ title_like }}>
     <fieldset>
-        <legend>Title Search</legend>
-        <input type="text" id="title" name="title" value={{ title_like }}>
+        <legend>Date Range</legend>
+        <label for="startdate">Start Date</label>
+        <input type="date" id="startdate" name="startdate" value={{ begin_date }}>
+        <label for="enddate">End Date</label>
+        <input type="date" id="enddate" name="enddate" value={{ end_date }}>
     </fieldset>
     <input type="submit" value="Submit">
-    <input type="reset">
 </form>
 <span>Total found: {{ events.len() }}</span>
 <ul class="flex flex-col bg-gray-200 max-w-2xl mx-auto">

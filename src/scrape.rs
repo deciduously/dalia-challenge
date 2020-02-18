@@ -147,29 +147,28 @@ impl Calendar for EventSource {
                         // range or single date?
                         match date.find(Class("date-display-range")).next() {
                             Some(div) => {
-                                /*
-                                let begin_dt = DateTime::parse_from_str(
-                                    &div.find(Class("date-display-start")).next().unwrap().text(),
-                                    "%d/%m/%y"
-                                )?;
-                                let end_dt = DateTime::parse_from_str(
-                                    &div.find(Class("date-display-end")).next().unwrap().text(),
-                                    "%d/%m/%y"
-                                )?;
-                                info!("begin: {:?}, end: {:?}", begin_dt, end_dt);
-                                (begin_dt.to_rfc3339(), Some(end_dt.to_rfc3339()))
-                                */
-                                (
-                                    div.find(Class("date-display-start")).next().unwrap().text(),
-                                    Some(
-                                        div.find(Class("date-display-end")).next().unwrap().text(),
-                                    ),
-                                )
+                                let begin =
+                                    div.find(Class("date-display-start")).next().unwrap().text();
+                                let end =
+                                    div.find(Class("date-display-end")).next().unwrap().text();
+                                let begin_dt = NaiveDate::parse_from_str(&begin, "%d/%m/%y")
+                                    .expect("Should parse date");
+                                let end_dt = NaiveDate::parse_from_str(&end, "%d/%m/%y")
+                                    .expect("Should parse date");
+
+                                (begin_dt.to_string(), Some(end_dt.to_string()))
                             }
                             None => {
-                                let single_date =
-                                    date.find(Class("date-display-single")).next().unwrap();
-                                (single_date.text(), None)
+                                let single_date = NaiveDate::parse_from_str(
+                                    &date
+                                        .find(Class("date-display-single"))
+                                        .next()
+                                        .unwrap()
+                                        .text(),
+                                    "%d/%m/%y",
+                                )
+                                .expect("Should parse date");
+                                (single_date.to_string(), None)
                             }
                         }
                     };
@@ -209,10 +208,13 @@ impl Calendar for EventSource {
                     let href = self.url(node.attr("href").unwrap());
 
                     let event_date = {
-                        let date_node = node.find(Name("p")).next().unwrap();
-                        let date = date_node.next().unwrap().next().unwrap().text();
-                        let time = date_node.next().unwrap().text();
-                        format!("{}T{}", date, time)
+                        let mut date_node = node.find(Name("p"));
+                        let mut node_text = date_node.next().unwrap().text();
+                        node_text.retain(|c| c != '\n' && c != ' ');
+                        let dt = NaiveDateTime::parse_from_str(&node_text, "%A%d.%m.%Ystart%R")
+                            .expect("Should parse datetime");
+
+                        dt.to_string()
                     };
 
                     let title = node.find(Name("h2")).next().unwrap().text();

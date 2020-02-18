@@ -57,3 +57,5 @@ impl<'a> NewEvent<'a> {
         }
     }
 }
+
+// TODO updates table - date, records_added

@@ -3,6 +3,7 @@
 
 use super::*;
 use askama::Template;
+use chrono::prelude::*;
 use flate2::{write::ZlibEncoder, Compression};
 use hyper::{header, Body, Request, Response, StatusCode};
 use std::{collections::HashMap, fs::File, io::prelude::*, path::PathBuf};
@@ -120,15 +121,32 @@ pub async fn index(req: Request<Body>) -> HandlerResult {
         "%"
     };
 
+    // Parse date search queries
+    let today = Local::today().format("%F").to_string();
+    let mut begin_date = today.clone();
+    if let Some(s) = params.get("startdate") {
+        if !s.is_empty() {
+            begin_date = s.to_string();
+        }
+    }
+    let mut end_date = today;
+    if let Some(s) = params.get("enddate") {
+        if !s.is_empty() {
+            end_date = s.to_string();
+        }
+    }
+
     // Request event set
     let events = filtered_events(
+        &begin_date,
+        &end_date,
         &sources,
         title_like,
         &DB_POOL.get().expect("Should get DB connection"),
     )?;
 
     // Render template
-    let template = IndexTemplate::new(events, title_like, &sources);
+    let template = IndexTemplate::new(&begin_date, &end_date, events, title_like, &sources);
     let html = template.render().expect("Should render markup");
     html_str_handler(&html).await
 }

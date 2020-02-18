@@ -15,28 +15,27 @@ pub struct FourOhFourTemplate {}
 #[derive(Template)]
 #[template(path = "index.html")]
 pub struct IndexTemplate<'a> {
+    begin_date: &'a str,
+    end_date: &'a str,
     events: Vec<Event>,
     title_like: &'a str,
     sources: &'a [EventSource],
 }
 
 impl<'a> IndexTemplate<'a> {
-    pub fn new(events: Vec<Event>, title_like: &'a str, sources: &'a [EventSource]) -> Self {
+    pub fn new(
+        begin_date: &'a str,
+        end_date: &'a str,
+        events: Vec<Event>,
+        title_like: &'a str,
+        sources: &'a [EventSource],
+    ) -> Self {
         Self {
+            begin_date,
+            end_date,
             events,
             title_like: if title_like == "%" { "" } else { title_like },
             sources,
-        }
-    }
-}
-
-impl<'a> Default for IndexTemplate<'a> {
-    fn default() -> Self {
-        let conn = DB_POOL.get().expect("Should open database connection");
-        Self {
-            events: all_events(&conn).expect("Should retrieve all events"),
-            title_like: "",
-            sources: EventSource::all(),
         }
     }
 }

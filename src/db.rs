@@ -55,11 +55,12 @@ pub fn all_events(conn: &SqliteConnection) -> AppResult<Vec<Event>> {
 
 /// Get a subset of events based on passed parameters
 pub fn filtered_events(
+    begin_date: &str,
+    end_date: &str,
     src: &[EventSource],
     title_like: &str,
     conn: &SqliteConnection,
 ) -> AppResult<Vec<Event>> {
-    // TODO search for source in all sources
     use schema::events::dsl::*;
 
     // Start query builder
@@ -71,13 +72,19 @@ pub fn filtered_events(
 
     // Filter sources
     let always_false = Box::new(source.eq(""));
+    // Build compound query trait object from EventSource list
     let query: Box<dyn BoxableExpression<schema::events::table, _, SqlType = Bool>> = src
         .iter()
         .filter(|s| s.enabled())
         .map(|s| source.eq(s.as_str()))
         .fold(always_false, |query, item| Box::new(query.or(item)));
 
-    Ok(filtered.filter(query).load::<Event>(conn)?)
+    // Return filtered result set ordered by date
+    Ok(filtered
+        .filter(query)
+        .filter(event_date.between(begin_date, end_date))
+        .order(event_date)
+        .load::<Event>(conn)?)
 }
 
 /// Add a new event to the database.  True on success, false on failure
