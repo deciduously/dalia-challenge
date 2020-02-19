@@ -11,11 +11,9 @@ use hyper::{
     Server,
 };
 use log::info;
-use std::convert::Infallible;
 
 mod config;
 mod db;
-mod error;
 mod handlers;
 mod models;
 mod router;
@@ -27,7 +25,6 @@ mod templates;
 
 pub use config::*;
 pub use db::*;
-pub use error::*;
 pub use handlers::*;
 pub use models::*;
 pub use router::*;
@@ -38,6 +35,8 @@ pub use templates::*;
 use config::{init_logging, OPT};
 use router::router;
 
+pub type AppResult<T> = Result<T, anyhow::Error>;
+
 #[tokio::main]
 async fn main() {
     init_logging(2).expect("Could not init logging"); // For now just INFO
@@ -45,7 +44,7 @@ async fn main() {
     let addr = format!("{}:{}", OPT.address, OPT.port)
         .parse()
         .expect("Should parse net::SocketAddr");
-    let make_svc = make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(router)) });
+    let make_svc = make_service_fn(|_conn| async { Ok::<_, anyhow::Error>(service_fn(router)) });
 
     let server = Server::bind(&addr).serve(make_svc);
 

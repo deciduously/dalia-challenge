@@ -102,7 +102,10 @@ pub fn create_refresh(conn: &SqliteConnection, total_added: i32) -> AppResult<us
 /// Get the most recent refresh, if any
 pub fn latest_refresh(conn: &SqliteConnection) -> AppResult<Option<Refresh>> {
     use schema::refreshes::dsl::*;
-    let res = refreshes.order(refresh_dt.desc()).limit(1).load::<Refresh>(conn)?;
+    let res = refreshes
+        .order(refresh_dt.desc())
+        .limit(1)
+        .load::<Refresh>(conn)?;
     if res.is_empty() {
         Ok(None)
     } else {

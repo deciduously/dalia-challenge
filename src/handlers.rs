@@ -30,8 +30,7 @@ pub async fn bytes_handler(
         .status(status.unwrap_or_default())
         .header(header::CONTENT_TYPE, content_type)
         .header(header::CONTENT_ENCODING, "deflate")
-        .body(Body::from(compressed))
-        .unwrap())
+        .body(Body::from(compressed))?)
 }
 
 /// Pass string to bytes_handler
@@ -57,10 +56,9 @@ pub async fn image(path_str: &str) -> HandlerResult {
     if let Some(ext) = path_buf.extension() {
         match ext.to_str().unwrap() {
             "ico" => {
-                let mut file =
-                    File::open("src/assets/images/favicon.ico").expect("Should open icon file");
+                let mut file = File::open("images/favicon.ico")?;
                 let mut buf = Vec::new();
-                file.read_to_end(&mut buf).expect("Should read icon file");
+                file.read_to_end(&mut buf)?;
                 bytes_handler(&buf, "image/x-icon", None).await
             }
             "svg" => {
@@ -137,7 +135,7 @@ pub async fn index(req: Request<Body>) -> HandlerResult {
     }
 
     // Grab connection
-    let conn = DB_POOL.get().expect("Should get DB connection");
+    let conn = DB_POOL.get()?;
 
     // Request event set
     let events = filtered_events(&begin_date, &end_date, &sources, title_like, &conn)?;
@@ -156,47 +154,46 @@ pub async fn index(req: Request<Body>) -> HandlerResult {
         &sources,
         &last_refresh,
     );
-    let html = template.render().expect("Should render markup");
+    let html = template.render()?;
     html_str_handler(&html).await
 }
 
 /// Serve 404 page
 pub async fn four_oh_four() -> HandlerResult {
     let template = FourOhFourTemplate::default();
-    let html = template.render().expect("Should render markup");
+    let html = template.render()?;
     html_str_handler(&html).await
 }
 
+/*
 /// Redirect home to load any new events
 async fn redirect_home() -> HandlerResult {
     Ok(Response::builder()
         .status(StatusCode::SEE_OTHER)
         .header(header::LOCATION, "/")
-        .body(Body::default())
-        .unwrap())
+        .body(Body::default())?)
 }
+*/
 
 /// Request a re-scrape
 pub async fn refresh_events() -> HandlerResult {
-    let conn = DB_POOL.get().expect("Should get DB connection");
-
     // Only refresh if it's been more than 24h
     // If there's no refresh, we'll just continue on
+    let conn = DB_POOL.get()?;
     if let Some(last_refresh) = latest_refresh(&conn)? {
         let now = Utc::now();
         let last = DateTime::parse_from_rfc3339(&last_refresh.refresh_dt)?;
         let duration = now.timestamp() - last.timestamp();
         if duration < (60 * 60 * 24) {
             // If it hasn't been 24 hours since the last scrape, do nothing
-            return Ok(Response::default())
+            return Ok(Response::default());
         }
     }
-
     let total_added = EventSource::scrape_all_events().await?;
     info!("Added {} new events", total_added);
     create_refresh(
         &conn,
         total_added.try_into().unwrap(), // I would be VERY surprised if we ever overflow an integer with this count
     )?;
-    redirect_home().await
+    Ok(Response::default())
 }

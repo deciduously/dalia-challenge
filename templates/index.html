@@ -1,42 +1,58 @@
 {% extends "skel.html" %}
 {% block title %}Berlin Cultural Events{% endblock %}
 {% block content %}
-<header><h1>Berlin Cultural Events</h1></header>
-Last refresh: <span id="last-refresh">{{ last_refresh }}</span>
-<form action="/" method="post">
-    <fieldset>
-        <legend>Input Sources</legend>
-        {% for source in sources %}
-        <label for={{ source.markup_name() }}>{{ source.to_string() }}</label>
-        <input type="checkbox" id="{{ source.markup_name() }}" name="{{ source.markup_name() }}" onchange="this.form.submit()" {% if source.enabled() %} checked {% endif %}>
-        {% endfor %}
-    </fieldset>
-    <label for="title">Title Search</label>
-    <input type="text" id="title" name="title" value="{{ title_like }}" onchange="this.form.submit()">
-    <fieldset>
-        <legend>Date Range</legend>
-        <label for="startdate">Start Date</label>
-        <input type="date" id="startdate" name="startdate" value="{{ begin_date }}" onchange="this.form.submit()">
-        <label for="enddate">End Date</label>
-        <input type="date" id="enddate" name="enddate" value="{{ end_date }}" onchange="this.form.submit()">
-    </fieldset>
-    </form>
-<span>Total found: {{ events.len() }}</span>
-<ul class="flex flex-col bg-gray-200 max-w-2xl mx-auto">
-    {% for event in events %}
-    <li id="node-{{ event.id }}" class="bg-gray-400 py-5">
-        <h2 class="text-lg">{{ event.title }}</h2>
-        {% if event.subtitle.is_some() %}
-        <h3 class="italic">{{ event.subtitle.clone().unwrap().as_str() }}</h3>
-        {% endif %}
-            <span class="text-sm">
-            <span>{{ event.event_date }}</span>
-            {% if event.event_end_date.is_some() %}
-            <span> thru {{ event.event_end_date.clone().unwrap().as_str() }}</span>
+<header>
+    <h1 class="italic">Berlin Cultural Events</h1>
+</header>
+<section class="mx-auto max-w-2xl flex flex-col">
+    <form action="/" method="post" class="w-full max-w-lg">
+        <div class="flex mx-auto mb-6">
+            <fieldset class="border rounded border-gray-400 w-1/2 flex mx-3">
+                <legend>Input Sources</legend>
+                {% for source in sources %}
+                <div class="w-1/4 px-6">
+                    <label for={{ source.markup_name() }}>{{ source.to_string() }}</label>
+                    <input type="checkbox" id="{{ source.markup_name() }}" name="{{ source.markup_name() }}" onchange="this.form.submit()" {% if source.enabled() %} checked {% endif %}>
+                </div>
+                {% endfor %}
+            </fieldset>
+            <div class="w-1/2">
+                <label for="title">Title Search</label>
+                <input type="text" id="title" name="title" value="{{ title_like }}" onchange="this.form.submit()">
+            </div>
+        </div>
+        <fieldset class="border rounded border-gray-400 flex flex-wrap -mx-3 mb-6">
+            <legend>Date Range</legend>
+            <div class="w-1/2 mx-auto">
+                <label for="startdate">Start Date</label>
+                <input type="date" id="startdate" name="startdate" value="{{ begin_date }}" onchange="this.form.submit()">
+            </div>
+            <div class="w-1/2 mx-auto">
+                <label for="enddate">End Date</label>
+                <input type="date" id="enddate" name="enddate" value="{{ end_date }}" onchange="this.form.submit()">
+            </div>
+        </fieldset>
+        </form>
+    <span>Total found: {{ events.len() }}</span>
+    <ul class="flex flex-col bg-gray-200 mx-auto">
+        {% for event in events %}
+        <li id="node-{{ event.id }}" class="bg-gray-400 py-5">
+            <a href="{{ event.href }}" target="_blank noreferrer">
+                <h2 class="text-lg">{{ event.title }}</h2>
+            </a>
+            {% if event.subtitle.is_some() %}
+            <h3 class="italic">{{ event.subtitle.clone().unwrap().as_str() }}</h3>
             {% endif %}
-        </span>
-        <p>{{ event.synopsis }}</p>
-    </li>
-    {% endfor %}
-</ul>
+                <span class="text-sm">
+                <span>{{ event.event_date }}</span>
+                {% if event.event_end_date.is_some() %}
+                <span> thru {{ event.event_end_date.clone().unwrap().as_str() }}</span>
+                {% endif %}
+            </span>
+            <p>{{ event.synopsis }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    Last refresh: <span id="last-refresh">{{ last_refresh }}</span>
+</section>
 {% endblock %}

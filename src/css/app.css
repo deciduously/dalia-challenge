@@ -5,3 +5,11 @@
 h1 {
     @apply text-xl font-extrabold;
 }
+
+form fieldset {
+    @apply block uppercase tracking-wide text-sm font-semibold italic mb-4;
+}
+
+form label {
+    @apply block uppercase tracking-wide text-xs font-semibold mb-2;
+}

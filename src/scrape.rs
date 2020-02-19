@@ -211,8 +211,7 @@ impl Calendar for EventSource {
                         let mut date_node = node.find(Name("p"));
                         let mut node_text = date_node.next().unwrap().text();
                         node_text.retain(|c| c != '\n' && c != ' ');
-                        let dt = NaiveDateTime::parse_from_str(&node_text, "%A%d.%m.%Ystart%R")
-                            .expect("Should parse datetime");
+                        let dt = NaiveDateTime::parse_from_str(&node_text, "%A%d.%m.%Ystart%R")?;
 
                         dt.to_string()
                     };
@@ -260,24 +259,3 @@ impl fmt::Display for EventSource {
         write!(f, "{}", self.pretty_name())
     }
 }
-
-/* UNUSED
-
-impl FromStr for EventSource {
-    type Err = std::io::Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use EventSource::*;
-        match s.to_lowercase().as_str() {
-            "coberlin" => Ok(CoBerlin),
-            "deutscheoperberlin" => Ok(DeutscheOperBerlin),
-            "gorki" => Ok(Gorki),
-            "berghain" => Ok(Berghain),
-            _ => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                "Unrecognized data source",
-            )),
-        }
-    }
-}
-
-*/

@@ -38,7 +38,7 @@ impl<'a> IndexTemplate<'a> {
             events,
             title_like: if title_like == "%" { "" } else { title_like },
             sources,
-            last_refresh
+            last_refresh,
         }
     }
 }

@@ -28,7 +28,7 @@ pub async fn router(req: Request<Body>) -> HandlerResult {
         (&Method::GET, "/robots.txt") => {
             string_handler(include_str!("assets/robots.txt"), "text", None).await
         }
-        (&Method::PUT, "/refresh") => refresh_events().await,
+        (&Method::POST, "/refresh") => refresh_events().await,
         (&Method::GET, path_str) => {
             // Otherwise...
             // is it an image?

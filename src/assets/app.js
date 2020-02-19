@@ -1,4 +1,4 @@
-// A little client-side scripting for smooth UI
+// Check if a refresh is needed after page loads
 
 // Trigger a refresh of all sources
 const refreshSources = () => {
@@ -8,7 +8,7 @@ const refreshSources = () => {
   if (last_refresh === "never" || now - new Date(last_refresh) > 1000 * 60 * 60 * 12) {
     const Http = new XMLHttpRequest();
     const url = "/refresh";
-    Http.open("PUT", url);
+    Http.open("POST", url);
     Http.send();
     Http.onreadystatechange = _ => window.location.reload(true);
   }

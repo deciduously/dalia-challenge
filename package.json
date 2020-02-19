@@ -4,7 +4,8 @@
   "description": "Aggregate and display a filterable list of Berlin cultural events",
   "main": "index.js",
   "scripts": {
-    "dev": "run-s style serve:dev",
+    "dev": "run-s style dev:rs",
+    "dev:rs": "cargo run",
     "docker:build": "docker build -t dalia-challenge .",
     "docker:run": "docker run -dit -p 8080:8080 dalia-challenge",
     "lint": "run-s lint:rs lint:css",

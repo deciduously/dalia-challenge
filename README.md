@@ -14,7 +14,7 @@ Web application to collect, aggregate, and display various cultural events in Be
 
 ### NPM Scripts
 
-- `dev`: start dev server on port 3000, watching for source changes
+- `dev`: start dev server on port 3000
 - `prod`: build and start production Docker container on port 8080 - must stop container via docker
 - `run`: run local image
 - `lint`: run linters
@@ -29,6 +29,7 @@ Options set in `src/config.toml` override these defaults, but options passed at 
 
 ### Crates
 
+- [anyhow](https://github.com/dtolnay/anyhow) - Quick error handling
 - [askama](https://github.com/djc/askama) - Templates
 - [chrono](https://github.com/chronotope/chrono) - Date and time
 - [diesel](https://diesel.rs) - ORM

@@ -15,7 +15,8 @@ COPY templates ./templates
 RUN cargo install --target x86_64-unknown-linux-musl --path .
 
 # Copy the statically-linked binary into a scratch container.
-FROM scratch
+FROM alpine:3.11
+RUN apk add sqlite
 COPY --from=builder /root/.cargo/bin/dalia-challenge .
-USER 1000
+COPY images ./images
 CMD ["./dalia-challenge", "-a", "0.0.0.0", "-p", "8080"]
