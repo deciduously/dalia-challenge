@@ -48,6 +48,41 @@ pub fn all_events(conn: &SqliteConnection) -> AppResult<Vec<Event>> {
     Ok(events.load::<Event>(conn)?)
 }
 
+/// Get the least and greatest event dates stored
+pub fn total_event_range(conn: &SqliteConnection) -> AppResult<(String, String)> {
+    use schema::events::dsl::*;
+    let oldest = events.order(event_date).limit(1).load::<Event>(conn)?;
+    let latest = events
+        .order(event_date.desc())
+        .limit(1)
+        .load::<Event>(conn)?;
+    if oldest.is_empty() || latest.is_empty() {
+        let today = Local::today().format("%F").to_string();
+        Ok((today.clone(), today))
+    } else {
+        Ok((
+            NaiveDate::parse_from_str(
+                &oldest[0]
+                    .event_date
+                    .split_whitespace()
+                    .collect::<Vec<&str>>()[0],
+                "%F",
+            )?
+            .format("%F")
+            .to_string(),
+            NaiveDate::parse_from_str(
+                &latest[0]
+                    .event_date
+                    .split_whitespace()
+                    .collect::<Vec<&str>>()[0],
+                "%F",
+            )?
+            .format("%F")
+            .to_string(),
+        ))
+    }
+}
+
 /// Get a subset of events based on passed parameters
 pub fn filtered_events(
     begin_date: &str,

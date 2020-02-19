@@ -119,23 +119,21 @@ pub async fn index(req: Request<Body>) -> HandlerResult {
         "%"
     };
 
+    // Grab connection
+    let conn = DB_POOL.get()?;
+
     // Parse date search queries
-    let today = Local::today().format("%F").to_string();
-    let mut begin_date = today.clone();
+    let (mut begin_date, mut end_date) = total_event_range(&conn)?;
     if let Some(s) = params.get("startdate") {
         if !s.is_empty() {
             begin_date = s.to_string();
         }
     }
-    let mut end_date = today;
     if let Some(s) = params.get("enddate") {
         if !s.is_empty() {
             end_date = s.to_string();
         }
     }
-
-    // Grab connection
-    let conn = DB_POOL.get()?;
 
     // Request event set
     let events = filtered_events(&begin_date, &end_date, &sources, title_like, &conn)?;
