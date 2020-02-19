@@ -139,7 +139,6 @@ pub async fn index(req: Request<Body>) -> HandlerResult {
 
     // Request event set
     let events = filtered_events(&begin_date, &end_date, &sources, title_like, &conn)?;
-
     // Render template
     let last_refresh = if let Some(r) = latest_refresh(&conn)? {
         r.refresh_dt
@@ -165,14 +164,6 @@ pub async fn four_oh_four() -> HandlerResult {
     html_str_handler(&html).await
 }
 
-/// Redirect home to load any new events
-async fn redirect_home() -> HandlerResult {
-    Ok(Response::builder()
-        .status(StatusCode::SEE_OTHER)
-        .header(header::LOCATION, "/")
-        .body(Body::default())?)
-}
-
 /// Request a re-scrape
 pub async fn refresh_events() -> HandlerResult {
     // Only refresh if it's been more than 24h
@@ -193,5 +184,5 @@ pub async fn refresh_events() -> HandlerResult {
         &conn,
         total_added.try_into().unwrap(), // I would be VERY surprised if we ever overflow an integer with this count
     )?;
-    redirect_home().await
+    Ok(Response::default())
 }

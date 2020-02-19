@@ -66,7 +66,7 @@ pub fn filtered_events(
     let filtered = events.filter(title.like(&title_like_str));
 
     // Filter sources
-    let always_false = Box::new(source.eq(""));
+    let always_false = Box::new(source.eq("Crazy Stuff"));
     // Build compound query trait object from EventSource list
     let query: Box<dyn BoxableExpression<schema::events::table, _, SqlType = Bool>> = src
         .iter()
