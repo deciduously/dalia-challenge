@@ -19,8 +19,6 @@ pub trait Calendar: Copy {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum EventSource {
     CoBerlin(bool),
-    DeutscheOperBerlin(bool),
-    Gorki(bool),
     Berghain(bool),
 }
 
@@ -30,12 +28,7 @@ impl EventSource {
     /// Get all the event sources to iterate over
     pub fn all() -> &'static [EventSource] {
         use EventSource::*;
-        &[
-            CoBerlin(true),
-            //DeutscheOperBerlin(true),
-            //Gorki(true),
-            Berghain(true),
-        ]
+        &[CoBerlin(true), Berghain(true)]
     }
     /// Scrape all the event sources, adding each new event found to the DB.  Returns number of events added
     pub async fn scrape_all_events() -> AppResult<usize> {
@@ -54,8 +47,6 @@ impl EventSource {
         use EventSource::*;
         match self {
             CoBerlin(_) => "CoBerlin",
-            DeutscheOperBerlin(_) => "DeutscheOperBerlin",
-            Gorki(_) => "Gorki",
             Berghain(_) => "Berghain",
         }
     }
@@ -63,7 +54,7 @@ impl EventSource {
     pub fn enabled(self) -> bool {
         use EventSource::*;
         match self {
-            CoBerlin(b) | DeutscheOperBerlin(b) | Gorki(b) | Berghain(b) => b,
+            CoBerlin(b) | Berghain(b) => b,
         }
     }
     /// Retrieve the current HTML from the source
@@ -80,8 +71,7 @@ impl EventSource {
         use EventSource::*;
         match self {
             CoBerlin(_) => "C/O Berlin",
-            DeutscheOperBerlin(_) => "Deutsche Oper Berlin",
-            Gorki(_) | Berghain(_) => self.as_str(),
+            Berghain(_) => self.as_str(),
         }
     }
     /// Static string for the webpage URL
@@ -89,8 +79,6 @@ impl EventSource {
         use EventSource::*;
         match self {
             CoBerlin(_) => "http://www.co-berlin.org",
-            DeutscheOperBerlin(_) => "http://www.deutscheoperberlin.de",
-            Gorki(_) => "http://gorki.de/en/programme",
             Berghain(_) => "http://berghain.de",
         }
     }
@@ -103,8 +91,6 @@ impl EventSource {
         use EventSource::*;
         let uri = match self {
             CoBerlin(_) => "en/calender",
-            DeutscheOperBerlin(_) => "en_EN/calendar",
-            Gorki(_) => "en/programme/2018/08/all",
             Berghain(_) => "en/program",
         };
         self.url(uri)
@@ -114,8 +100,6 @@ impl EventSource {
         use EventSource::*;
         match self {
             CoBerlin(b) => CoBerlin(!b),
-            DeutscheOperBerlin(b) => DeutscheOperBerlin(!b),
-            Gorki(b) => Gorki(!b),
             Berghain(b) => Berghain(!b),
         }
     }
@@ -201,8 +185,6 @@ impl Calendar for EventSource {
                     }
                 }
             }
-            DeutscheOperBerlin(_) => {} // Month, then Date, then Node
-            Gorki(_) => {}              // Month, then Date, then Node
             Berghain(_) => {
                 for node in document.find(Class("upcoming-event")) {
                     let href = self.url(node.attr("href").unwrap());

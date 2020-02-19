@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+a:hover {
+    @apply underline;
+}
+
 h1 {
     @apply text-xl font-extrabold;
 }

@@ -165,7 +165,6 @@ pub async fn four_oh_four() -> HandlerResult {
     html_str_handler(&html).await
 }
 
-/*
 /// Redirect home to load any new events
 async fn redirect_home() -> HandlerResult {
     Ok(Response::builder()
@@ -173,7 +172,6 @@ async fn redirect_home() -> HandlerResult {
         .header(header::LOCATION, "/")
         .body(Body::default())?)
 }
-*/
 
 /// Request a re-scrape
 pub async fn refresh_events() -> HandlerResult {
@@ -195,5 +193,5 @@ pub async fn refresh_events() -> HandlerResult {
         &conn,
         total_added.try_into().unwrap(), // I would be VERY surprised if we ever overflow an integer with this count
     )?;
-    Ok(Response::default())
+    redirect_home().await
 }

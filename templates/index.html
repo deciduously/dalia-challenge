@@ -10,7 +10,7 @@
             <fieldset class="border rounded border-gray-400 w-1/2 flex mx-3">
                 <legend>Input Sources</legend>
                 {% for source in sources %}
-                <div class="w-1/4 px-6">
+                <div class="w-1/2 px-6">
                     <label for={{ source.markup_name() }}>{{ source.to_string() }}</label>
                     <input type="checkbox" id="{{ source.markup_name() }}" name="{{ source.markup_name() }}" onchange="this.form.submit()" {% if source.enabled() %} checked {% endif %}>
                 </div>
