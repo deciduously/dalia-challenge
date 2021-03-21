@@ -11,19 +11,18 @@ license = "BSD-3-Clause"
 
 [dependencies]
 anyhow = "1.0"
-askama = "0.9"
+askama = "0.10"
 chrono = "0.4"
 diesel_migrations = "1.4"
 flate2 = "1.0"
-hyper = "0.13"
 lazy_static = "1.4"
 log = "0.4"
 pretty_env_logger = "0.4"
-reqwest = "0.10"
+reqwest = "0.11"
 r2d2 = "0.8"
 serde = "1.0"
 serde_derive = "1.0"
-select = "0.4"
+select = "0.5"
 structopt = "0.3"
 toml = "0.5"
 url = "2.1"
@@ -32,9 +31,13 @@ url = "2.1"
 version = "1.4"
 features = ["r2d2", "sqlite"]
 
+[dependencies.hyper]
+version = "0.14"
+features = ["server"]
+
 [dependencies.tokio]
 features = ["full"]
-version = "0.2"
+version = "1.4"
 
 [dev-dependencies]
-pretty_assertions = "0.6"
+pretty_assertions = "0.7"
